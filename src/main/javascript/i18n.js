@@ -17,7 +17,9 @@ var i18n = (function (i18n, ApiLoader, navigator) {
       dateToLocaleString = Date.prototype.toLocaleString,
       arrayToLocaleString = Array.prototype.toLocaleString;
 
-  i18n.Locale = Class.create({
+  i18n.Locale = Class.create(
+      /*debug*/ "i18n.Locale",
+  {
     initialize: function(lang,translations) {
       this._lang = lang;
       this._tr = translations || {};
@@ -60,14 +62,25 @@ var i18n = (function (i18n, ApiLoader, navigator) {
   i18n.language = (navigator.language || navigator.userLanguage || navigator.systemLanguage || '').slice(0,2);
   i18n.defaultLocale = new i18n.Locale('');
 
-  i18n.load = function(lang, baseUrl) {
+  i18n.load = function(lang, baseUrl, callback) {
+    if( !callback || !Object.isFunction(callback) ) {
+      callback = Improved.emptyFunction;
+    }
     if( Object.isUndefined(i18n.locales[lang]) ) {
       ApiLoader.load({
           name: "i18n-locale-" + lang,
           url: (baseUrl || ('i18n-locale-' + lang + '.js'))
+      }, {
+        onSuccess: function() {
+          callback(i18n.locales[lang]);
+        },
+        onFailure: function() {
+          callback(i18n.locales[lang]);
+        }
       });
       return void(0);
     }
+    callback(i18n.locales[lang]);
     return i18n.locales[lang];
   };
 
